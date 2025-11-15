@@ -18,7 +18,10 @@ const WelcomePage = () => {
                 <Link to="/profile" style={{ textDecoration: "none" }}>
                     <Button title="Профиль" background="primary"/>
                 </Link>
-                <Button title="Администратор" background="secondary"/>
+                <Link to="/adminLogIn" style={{ textDecoration: "none" }}>
+                    <Button title="Администратор" background="secondary"/>
+                </Link>
+
             </div>
         </div>
     );
