@@ -4,10 +4,11 @@ type InputProps = {
     type: "email" | "password";
     title: string;
     placeholder: string;
+    value: string;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Input = ({ type, title, placeholder, onChange }:InputProps) => {
+const Input = ({ type, title, placeholder, onChange, value }:InputProps) => {
     return (
         <>
             <div className={styles["Input"]}>
@@ -16,6 +17,7 @@ const Input = ({ type, title, placeholder, onChange }:InputProps) => {
                     placeholder={placeholder}
                     className={styles["Input__textarea"]}
                     onChange={onChange}
+                    value={value}
                 />
                 <label className={styles["Input__title"]}>{title}</label>
             </div>
