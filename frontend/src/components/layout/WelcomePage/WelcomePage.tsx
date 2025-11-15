@@ -1,8 +1,8 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import { faUsers } from '@fortawesome/free-solid-svg-icons';
+import {Link} from "react-router-dom";
 import "./WelcomePage.scss";
 import Button from "../../ui/Button/Button.tsx";
-
 
 const WelcomePage = () => {
     return (
@@ -15,7 +15,9 @@ const WelcomePage = () => {
                 Добро пожаловать! Выберите, куда вы хотите зайти:
             </p>
             <div className="WelcomePage__buttons">
-                <Button title="Профиль" background="primary"/>
+                <Link to="/profile" style={{ textDecoration: "none" }}>
+                    <Button title="Профиль" background="primary"/>
+                </Link>
                 <Button title="Администратор" background="secondary"/>
             </div>
         </div>
