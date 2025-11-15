@@ -16,7 +16,10 @@ const ProfilePage = () => {
                 </div>
 
                 <div className="ProfilePage__actions">
-                    <ActionButton title="Скидки" icon={faTags} />
+                    <Link to={`/profile/offers`} style={{ textDecoration: "none" }}>
+                        <ActionButton title="Скидки" icon={faTags} />
+                    </Link>
+
 
                     <Link to="/profile" style={{ textDecoration: "none" }}>
                         <ActionButton title="QR" icon={faQrcode} />
