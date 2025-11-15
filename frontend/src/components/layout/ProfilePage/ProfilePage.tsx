@@ -1,7 +1,7 @@
 import QRCodeGenerator from "../../QRCode/QRCodeGenerator.tsx";
 import "./ProfilePage.scss";
 import ActionButton from "../../ui/ActionButton/ActionButton.tsx";
-import {faQrcode, faTags} from "@fortawesome/free-solid-svg-icons";
+import {faHome, faQrcode, faTags} from "@fortawesome/free-solid-svg-icons";
 import {Link} from "react-router-dom";
 
 const ProfilePage = () => {
@@ -16,10 +16,13 @@ const ProfilePage = () => {
                 </div>
 
                 <div className="ProfilePage__actions">
+                    <Link to={`/`} style={{ textDecoration: "none" }}>
+                        <ActionButton title="Домой" icon={faHome} />
+                    </Link>
+
                     <Link to={`/profile/offers`} style={{ textDecoration: "none" }}>
                         <ActionButton title="Скидки" icon={faTags} />
                     </Link>
-
 
                     <Link to="/profile" style={{ textDecoration: "none" }}>
                         <ActionButton title="QR" icon={faQrcode} />
