@@ -2,15 +2,14 @@ import style from "./AdminLogIn.module.scss";
 import Button from "../../ui/Button/Button.tsx";
 import Input from "../../ui/Input/Input.tsx";
 import {useState} from "react";
-import {Link} from "react-router-dom";
-import ActionButton from "../../ui/ActionButton/ActionButton.tsx";
-import {faHome} from "@fortawesome/free-solid-svg-icons";
+import { Link, useNavigate } from "react-router-dom";
 
 const AdminLogIn = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
     const [error, setError] = useState<string | null>(null);
+
+    const navigate = useNavigate();
 
     const validateForm = () => {
         if (!email.trim() || !password.trim()) {
@@ -27,16 +26,19 @@ const AdminLogIn = () => {
     };
 
     const handleLogin = () => {
-        const validationError = validateForm();
+        const validationError =  validateForm();
 
         if (validationError) {
             setError(validationError);
             return;
         }
 
-        setError(null);
-
-        console.log("Logging in:", { email, password });
+        if (email === "admin@gmail.com" && password === "123456") {
+            localStorage.setItem("isAdmin", "true");
+            navigate("/adminPanel");   // ПЕРЕХОД в админку
+        } else {
+            setError("Неверный email или пароль");
+        }
     };
 
     return (
@@ -65,8 +67,9 @@ const AdminLogIn = () => {
 
                     <div className={style["admin__input--actions"]}>
                         <Button title="Log In" background="secondary" onClick={handleLogin} />
+
                         <Link to="/" style={{ textDecoration: "none" }}>
-                            <ActionButton title="Домой" icon={faHome} />
+                            <Button title="Домой" background="primary"/>
                         </Link>
                     </div>
                 </div>
