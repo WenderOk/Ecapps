@@ -1,0 +1,16 @@
+name: YCapps
+
+meta:
+  environment: python
+  toolchain:
+    name: pip
+    version: 3.11
+
+build:
+  requirementsPath: project/requirements.txt
+  useCache: true
+
+run:
+  containerPort: 5000
+  command: cd project/ && gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 120 app:app
+  persistenceMount: /data

@@ -1,0 +1,285 @@
+# database.py
+import sqlite3
+from datetime import datetime
+import random
+import string
+import logging
+from contextlib import contextmanager
+
+# Настройка логирования
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class Database:
+    def __init__(self, db_path='youth_card.db'):
+        self.db_path = db_path
+        self.init_db()
+    
+    @contextmanager
+    def get_connection(self):
+        """Контекстный менеджер для соединений с автоматическим закрытием"""
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row  # Возвращаем словари вместо кортежей
+        try:
+            yield conn
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Database error: {e}")
+            raise
+        finally:
+            conn.close()
+    
+    def init_db(self):
+        """Инициализация базы данных с улучшенной структурой"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            
+            # Включаем внешние ключи
+            cursor.execute('PRAGMA foreign_keys = ON')
+            
+            # Таблица пользователей
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    telegram_id INTEGER UNIQUE NOT NULL,
+                    telegram_username TEXT,
+                    card_number TEXT UNIQUE NOT NULL,
+                    card_active BOOLEAN DEFAULT TRUE,
+                    UNIQUE(telegram_id, card_number)
+                )
+            ''')
+            
+            # Таблица бизнесов
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS businesses (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    company_name TEXT NOT NULL,
+                    address TEXT NOT NULL,
+                    discount_description TEXT NOT NULL,
+                    discount_percentage INTEGER CHECK(discount_percentage >= 0 AND discount_percentage <= 100),
+                    phone_number TEXT,
+                    working_hours TEXT,
+                    is_active BOOLEAN DEFAULT TRUE,
+                )
+            ''')
+            
+            # # Таблица сессий QR-кодов
+            # cursor.execute('''
+            #     CREATE TABLE IF NOT EXISTS qr_sessions (
+            #         id INTEGER PRIMARY KEY AUTOINCREMENT,
+            #         user_id INTEGER NOT NULL,
+            #         qr_data TEXT UNIQUE NOT NULL,
+            #         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            #         expires_at TIMESTAMP NOT NULL,
+            #         is_used BOOLEAN DEFAULT FALSE,
+            #         used_at TIMESTAMP,
+            #         business_id INTEGER,
+            #         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+            #         FOREIGN KEY (business_id) REFERENCES businesses (id) ON DELETE CASCADE
+            #     )
+            # ''')
+            
+            logger.info("Database initialized successfully")
+
+    def generate_card_number(self):
+        """Генерация уникального номера карты с проверкой уникальности"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            attempts = 0
+            while attempts < 10:  # Защита от бесконечного цикла
+                card_number = 'YM' + ''.join(random.choices(string.digits, k=8))
+                cursor.execute('SELECT id FROM users WHERE card_number = ?', (card_number,))
+                if not cursor.fetchone():
+                    return card_number
+                attempts += 1
+            raise Exception("Could not generate unique card number")
+
+    def get_or_create_user_by_telegram(self, telegram_data):
+        """Получить или создать пользователя по данным Telegram"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            
+            # Проверяем существующего пользователя
+            cursor.execute(
+                'SELECT id FROM users WHERE telegram_id = ?', 
+                (telegram_data['id'],)
+            )
+            user = cursor.fetchone()
+            
+            if user:
+                user_id = user['id']
+                # Обновляем последний вход и данные
+                cursor.execute('''
+                    UPDATE users 
+                    SET telegram_username = ?
+                    WHERE id = ?
+                ''', (
+                    telegram_data.get('username'),
+                    user_id
+                ))
+            else:
+                # Создаем нового пользователя
+                card_number = self.generate_card_number()
+                cursor.execute('''
+                    INSERT INTO users 
+                    (telegram_id, telegram_username, card_number)
+                    VALUES (?, ?, ?)
+                ''', (
+                    telegram_data['id'],
+                    telegram_data.get('username'),
+                    card_number
+                ))
+                user_id = cursor.lastrowid
+                logger.info(f"Created new user: {user_id} with card: {card_number}")
+            
+            return user_id
+
+    def get_user_by_telegram_id(self, telegram_id):
+        """Получить пользователя по Telegram ID"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM users WHERE telegram_id = ?', (telegram_id,))
+            user = cursor.fetchone()
+            return dict(user) if user else None
+
+    def get_user_count(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) as count FROM users')
+            return cursor.fetchone()['count']
+
+    def get_business_count(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) as count FROM businesses')
+            return cursor.fetchone()['count']
+        
+    def add_user(self, user_data):
+        """Добавить пользователя (для админки)"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            
+            card_number = self.generate_card_number()
+            # Генерируем уникальный telegram_id для пользователей созданных через админку
+            fake_telegram_id = int(hash(user_data['telegram_username']) % 1000000000)
+            
+            cursor.execute('''
+                INSERT INTO users (telegram_id, telegram_username, card_number, card_active, created_at)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (
+                abs(fake_telegram_id),  # Убеждаемся что положительное число
+                user_data['telegram_username'],
+                card_number,
+                user_data['card_active'],
+                datetime.now()
+            ))
+            user_id = cursor.lastrowid
+            logger.info(f"Admin created user: {user_id} with card: {card_number}")
+            return user_id
+
+    def delete_user(self, user_id):
+        """Удалить пользователя"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM users WHERE id = ?', (user_id,))
+            affected = cursor.rowcount
+            if affected > 0:
+                logger.info(f"Deleted user: {user_id}")
+            return affected > 0
+
+
+    def add_business(self, business_data):
+        """Добавить бизнес"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            
+            coordinates = business_data['coordinates']
+            if not isinstance(coordinates, (list, tuple)) or len(coordinates) != 2:
+                raise ValueError("Coordinates must be a list/tuple of [lat, lon]")
+            
+            cursor.execute('''
+                INSERT INTO businesses 
+                (company_name, address, latitude, longitude, discount_description,
+                 discount_percentage, phone_number, working_hours, is_active, category,
+                 contact_person, email, website)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                business_data['company_name'],
+                business_data['address'],
+                coordinates[0],  # latitude
+                coordinates[1],  # longitude
+                business_data['discount_description'],
+                business_data.get('discount_percentage'),
+                business_data.get('phone_number'),
+                business_data.get('working_hours'),
+                business_data['is_active'],
+                business_data.get('category', 'other'),
+                business_data.get('contact_person'),
+                business_data.get('email'),
+                business_data.get('website')
+            ))
+            business_id = cursor.lastrowid
+            logger.info(f"Added business: {business_id} - {business_data['company_name']}")
+            return business_id
+
+    def delete_business(self, business_id):
+        """Удалить бизнес"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM businesses WHERE id = ?', (business_id,))
+            affected = cursor.rowcount
+            if affected > 0:
+                logger.info(f"Deleted business: {business_id}")
+            return affected > 0
+        
+    # def create_qr_session(self, user_id, qr_data, expires_minutes=5, business_id=None):
+    #     """Создать сессию QR-кода"""
+    #     with self.get_connection() as conn:
+    #         cursor = conn.cursor()
+            
+    #         expires_at = datetime.now().timestamp() + (expires_minutes * 60)
+            
+    #         cursor.execute('''
+    #             INSERT INTO qr_sessions 
+    #             (user_id, qr_data, expires_at, business_id)
+    #             VALUES (?, ?, ?, ?)
+    #         ''', (user_id, qr_data, expires_at, business_id))
+            
+    #         return cursor.lastrowid
+
+    # def validate_qr_session(self, qr_data, business_id=None):
+    #     """Проверить валидность QR-сессии"""
+    #     with self.get_connection() as conn:
+    #         cursor = conn.cursor()
+            
+    #         cursor.execute('''
+    #             SELECT qs.*, u.card_number, u.card_active, u.is_banned
+    #             FROM qr_sessions qs
+    #             JOIN users u ON qs.user_id = u.id
+    #             WHERE qs.qr_data = ? AND qs.expires_at > ? AND qs.is_used = 0
+    #         ''', (qr_data, datetime.now().timestamp()))
+            
+    #         session = cursor.fetchone()
+            
+    #         if not session:
+    #             return None, "QR-код не найден или истек"
+            
+    #         if not session['card_active']:
+    #             return None, "Карта не активна"
+            
+    #         if session['is_banned']:
+    #             return None, "Карта заблокирована"
+            
+    #         # Помечаем как использованную
+    #         cursor.execute('''
+    #             UPDATE qr_sessions 
+    #             SET is_used = 1, used_at = ?, business_id = ?
+    #             WHERE id = ?
+    #         ''', (datetime.now(), business_id, session['id']))
+            
+    #         return dict(session), None
+
+
+# Создаем экземпляр базы данных
+db = Database()

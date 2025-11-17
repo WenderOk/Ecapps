@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <script>
+        
+        let tg = window.Telegram.WebApp;
+        user = tg.initDataUnsafe.user;
+
+        // Извлекаем имя пользователя
+        const firstName = user?.first_name;
+        const lastName = user?.last_name;
+        const username = user?.username;
+
+        // Используем данные
+        console.log('ФИО:', firstName);
+        console.log('telegram_use:', lastName);
+        console.log('Username:', username);
+
+        // Пример вывода в HTML
+        document.getElementById('user-info').innerText = `
+        <p>Имя: ${firstName}</p>
+        <p>telegram_use: ${lastName}</p>
+        <p>Username: @${username}</p>
+        `;
+
+        fBtn.addEventListener("click", () => {
+            document.getElementsByClassName("Main")[0].style.display = "none";
+            document.getElementsByClassName("test-form")[0].style.display = "block";
+        });
+
+        sBtn.addEventListener("click", () => {
+            document.getElementsByClassName('User-name').innerHTML = JSON.stringify(initData);
+            document.getElementsByClassName('User-name').textContent = initData.first_name;
+        });
+    </script>
+</body>
+</html>
