@@ -60,25 +60,9 @@ class Database:
                     discount_percentage INTEGER CHECK(discount_percentage >= 0 AND discount_percentage <= 100),
                     phone_number TEXT,
                     working_hours TEXT,
-                    is_active BOOLEAN DEFAULT TRUE,
+                    is_active BOOLEAN DEFAULT TRUE
                 )
             ''')
-            
-            # # Таблица сессий QR-кодов
-            # cursor.execute('''
-            #     CREATE TABLE IF NOT EXISTS qr_sessions (
-            #         id INTEGER PRIMARY KEY AUTOINCREMENT,
-            #         user_id INTEGER NOT NULL,
-            #         qr_data TEXT UNIQUE NOT NULL,
-            #         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            #         expires_at TIMESTAMP NOT NULL,
-            #         is_used BOOLEAN DEFAULT FALSE,
-            #         used_at TIMESTAMP,
-            #         business_id INTEGER,
-            #         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-            #         FOREIGN KEY (business_id) REFERENCES businesses (id) ON DELETE CASCADE
-            #     )
-            # ''')
             
             logger.info("Database initialized successfully")
 
@@ -127,7 +111,7 @@ class Database:
                     VALUES (?, ?, ?)
                 ''', (
                     telegram_data['id'],
-                    telegram_data.get('username'),
+                    telegram_data['fio'],
                     card_number
                 ))
                 user_id = cursor.lastrowid
@@ -162,17 +146,16 @@ class Database:
             
             card_number = self.generate_card_number()
             # Генерируем уникальный telegram_id для пользователей созданных через админку
-            fake_telegram_id = int(hash(user_data['telegram_username']) % 1000000000)
+            fake_telegram_id = int(hash(user_data['id']) % 1000000000)
             
             cursor.execute('''
-                INSERT INTO users (telegram_id, telegram_username, card_number, card_active, created_at)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO users (telegram_id, telegram_username, card_number)
+                VALUES (?, ?, ?)
             ''', (
                 abs(fake_telegram_id),  # Убеждаемся что положительное число
-                user_data['telegram_username'],
-                card_number,
-                user_data['card_active'],
-                datetime.now()
+                user_data['fio'],
+                card_number
+                
             ))
             user_id = cursor.lastrowid
             logger.info(f"Admin created user: {user_id} with card: {card_number}")
@@ -233,52 +216,7 @@ class Database:
                 logger.info(f"Deleted business: {business_id}")
             return affected > 0
         
-    # def create_qr_session(self, user_id, qr_data, expires_minutes=5, business_id=None):
-    #     """Создать сессию QR-кода"""
-    #     with self.get_connection() as conn:
-    #         cursor = conn.cursor()
-            
-    #         expires_at = datetime.now().timestamp() + (expires_minutes * 60)
-            
-    #         cursor.execute('''
-    #             INSERT INTO qr_sessions 
-    #             (user_id, qr_data, expires_at, business_id)
-    #             VALUES (?, ?, ?, ?)
-    #         ''', (user_id, qr_data, expires_at, business_id))
-            
-    #         return cursor.lastrowid
-
-    # def validate_qr_session(self, qr_data, business_id=None):
-    #     """Проверить валидность QR-сессии"""
-    #     with self.get_connection() as conn:
-    #         cursor = conn.cursor()
-            
-    #         cursor.execute('''
-    #             SELECT qs.*, u.card_number, u.card_active, u.is_banned
-    #             FROM qr_sessions qs
-    #             JOIN users u ON qs.user_id = u.id
-    #             WHERE qs.qr_data = ? AND qs.expires_at > ? AND qs.is_used = 0
-    #         ''', (qr_data, datetime.now().timestamp()))
-            
-    #         session = cursor.fetchone()
-            
-    #         if not session:
-    #             return None, "QR-код не найден или истек"
-            
-    #         if not session['card_active']:
-    #             return None, "Карта не активна"
-            
-    #         if session['is_banned']:
-    #             return None, "Карта заблокирована"
-            
-    #         # Помечаем как использованную
-    #         cursor.execute('''
-    #             UPDATE qr_sessions 
-    #             SET is_used = 1, used_at = ?, business_id = ?
-    #             WHERE id = ?
-    #         ''', (datetime.now(), business_id, session['id']))
-            
-    #         return dict(session), None
+    
 
 
 # Создаем экземпляр базы данных

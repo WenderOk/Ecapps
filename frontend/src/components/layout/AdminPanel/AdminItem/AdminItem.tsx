@@ -3,7 +3,7 @@ import Button from "../../../ui/Button/Button.tsx";
 
 type AdminItemProps = {
     name: string;
-    number: number;
+    number: string;
     email: string;
     onDelete?: () => void;
 }

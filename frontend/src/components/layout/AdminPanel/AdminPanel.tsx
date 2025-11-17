@@ -2,7 +2,8 @@ import style from "./AdminPanel.module.scss";
 import Button from "../../ui/Button/Button";
 import Input from "../../ui/Input/Input";
 import AdminItem from "./AdminItem/AdminItem";
-import {useState} from "react";
+import { useState, useEffect} from "react";
+import { apiService } from "../../services/api";
 
 interface User {
     id: number;
@@ -75,6 +76,8 @@ const AdminPanel = () => {
         setFio("");
         setPhone("");
         setEmail("");
+
+        apiService.addUser(newUser);
     };
 
     const handleDeleteUser = (id: number) => {
@@ -122,9 +125,9 @@ const AdminPanel = () => {
                 <h2 className={style["admin__header--title"]}>Участники Молодёжной Карты</h2>
 
                 <div className={style["admin__form"]}>
-                    <Input title="ФИО" value={fio} onChange={(e) => setFio(e.target.value)} />
-                    <Input title="Телефон" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                    <Input title="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <Input title="ФИО" value={fio} onChange={(e) => setFio(e.target.value)} type={"email"} placeholder={""} />
+                    <Input title="Телефон" value={phone} onChange={(e) => setPhone(e.target.value)} type={"email"} placeholder={""} />
+                    <Input title="Email" value={email} onChange={(e) => setEmail(e.target.value)} type={"email"} placeholder={""} />
 
                     {userError && <p className={style.error}>{userError}</p>}
 
@@ -149,8 +152,8 @@ const AdminPanel = () => {
                 <h2 className={style.sectionTitle}>Бизнес-карточки</h2>
 
                 <div className={style.form}>
-                    <Input title="Название" value={cardName} onChange={(e) => setCardName(e.target.value)} />
-                    <Input title="Описание" value={cardDesc} onChange={(e) => setCardDesc(e.target.value)} />
+                    <Input title="Название" value={cardName} onChange={(e) => setCardName(e.target.value)} type={"email"} placeholder={""} />
+                    <Input title="Описание" value={cardDesc} onChange={(e) => setCardDesc(e.target.value)} type={"email"} placeholder={""} />
 
                     {cardError && <p className={style.error}>{cardError}</p>}
 

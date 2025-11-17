@@ -28,16 +28,6 @@
         <p>telegram_use: ${lastName}</p>
         <p>Username: @${username}</p>
         `;
-
-        fBtn.addEventListener("click", () => {
-            document.getElementsByClassName("Main")[0].style.display = "none";
-            document.getElementsByClassName("test-form")[0].style.display = "block";
-        });
-
-        sBtn.addEventListener("click", () => {
-            document.getElementsByClassName('User-name').innerHTML = JSON.stringify(initData);
-            document.getElementsByClassName('User-name').textContent = initData.first_name;
-        });
     </script>
 </body>
 </html>
