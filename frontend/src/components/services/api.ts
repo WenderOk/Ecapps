@@ -2,7 +2,6 @@
 const API_BASE_URL = 'http://localhost:5000/api';
 
 export interface User {
-  id: number;
   telegram_id: number;
   telegram_username: string;
   card_number: string;
@@ -12,12 +11,7 @@ export interface User {
 export interface Business {
   id: number;
   company_name: string;
-  address: string;
-  discount_description: string;
   discount_percentage: number;
-  phone_number: string;
-  working_hours: string;
-  is_active: boolean;
 }
 
 export interface Stats {
@@ -42,13 +36,12 @@ class ApiService {
     return response.json();
   }
 
-  // Admin User methods
   async getAllUsers(): Promise<User[]> {
     const data = await this.request<{ success: boolean; users: User[] }>('/admin/users');
     return data.users;
   }
 
-  async addUser(userData: { fio: string; phone: string; email: string }): Promise<number> {
+  async addUser(userData: { telegram_id: number; username: string; card_number: string; card_active: boolean }): Promise<number> {
     const data = await this.request<{ success: boolean; user_id: number }>('/admin/users', {
       method: 'POST',
       body: JSON.stringify(userData),
@@ -63,27 +56,20 @@ class ApiService {
     return data.success;
   }
 
-  async getBusinesses(): Promise<Business[]> {
+  async getDiscounts(): Promise<Business[]> {
     const data = await this.request<{ success: boolean; businesses: Business[] }>('/businesses');
     return data.businesses;
   }
 
-  async addBusiness(businessData: {
-    company_name: string;
-    address: string;
-    discount_description: string;
-    discount_percentage?: number;
-    phone_number?: string;
-    working_hours?: string;
-  }): Promise<number> {
-    const data = await this.request<{ success: boolean; business_id: number }>('/businesses', {
+  async addDiscount(businessData: {company_name: string; discount_percentage: number;}): Promise<number> {
+    const data = await this.request<{ success: boolean; discount_id: number }>('/businesses', {
       method: 'POST',
       body: JSON.stringify(businessData),
     });
-    return data.business_id;
+    return data.discount_id;
   }
 
-  async deleteBusiness(businessId: number): Promise<boolean> {
+  async deleteDiscount(businessId: number): Promise<boolean> {
     const data = await this.request<{ success: boolean; message: string }>(`/businesses/${businessId}`, {
       method: 'DELETE',
     });

@@ -31,7 +31,6 @@ const OffersPage = () => {
         <Card 
           key={business.id}
           title={business.company_name}
-          subtitle={business.discount_description}
           address={business.address}
           image="https://via.placeholder.com/300x200" // Заглушка
         />

@@ -5,7 +5,7 @@ import "./WelcomePage.scss";
 import Button from "../../ui/Button/Button.tsx";
 
 const WelcomePage = () => {
-    return (
+    return (    
         <div className="WelcomePage">
             <h1 className="WelcomePage__title">YCard</h1>
             <div className="WelcomePage__logo">
@@ -21,7 +21,6 @@ const WelcomePage = () => {
                 <Link to="/adminLogIn" style={{ textDecoration: "none" }}>
                     <Button title="Администратор" background="secondary"/>
                 </Link>
-
             </div>
         </div>
     );

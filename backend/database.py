@@ -31,7 +31,7 @@ class Database:
             conn.close()
     
     def init_db(self):
-        """Инициализация базы данных с улучшенной структурой"""
+        """Инициализация базы данных"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
             
@@ -41,8 +41,7 @@ class Database:
             # Таблица пользователей
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    telegram_id INTEGER UNIQUE NOT NULL,
+                    telegram_id INTEGER PRIMARY KEY UNIQUE NOT NULL,
                     telegram_username TEXT,
                     card_number TEXT UNIQUE NOT NULL,
                     card_active BOOLEAN DEFAULT TRUE,
@@ -50,17 +49,12 @@ class Database:
                 )
             ''')
             
-            # Таблица бизнесов
+            # Таблица скидок(бизнесов)
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS businesses (
+                CREATE TABLE IF NOT EXISTS discounts (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     company_name TEXT NOT NULL,
-                    address TEXT NOT NULL,
-                    discount_description TEXT NOT NULL,
-                    discount_percentage INTEGER CHECK(discount_percentage >= 0 AND discount_percentage <= 100),
-                    phone_number TEXT,
-                    working_hours TEXT,
-                    is_active BOOLEAN DEFAULT TRUE
+                    discount_percentage INTEGER CHECK(discount_percentage >= 0 AND discount_percentage <= 100)
                 )
             ''')
             
@@ -73,7 +67,7 @@ class Database:
             attempts = 0
             while attempts < 10:  # Защита от бесконечного цикла
                 card_number = 'YM' + ''.join(random.choices(string.digits, k=8))
-                cursor.execute('SELECT id FROM users WHERE card_number = ?', (card_number,))
+                cursor.execute('SELECT telegram_id FROM users WHERE card_number = ?', (card_number,))
                 if not cursor.fetchone():
                     return card_number
                 attempts += 1
@@ -86,18 +80,18 @@ class Database:
             
             # Проверяем существующего пользователя
             cursor.execute(
-                'SELECT id FROM users WHERE telegram_id = ?', 
-                (telegram_data['id'],)
+                'SELECT telegram_id FROM users WHERE telegram_id = ?', 
+                (telegram_data['telegram_id'],)
             )
             user = cursor.fetchone()
             
             if user:
-                user_id = user['id']
+                user_id = user['telegram_id']
                 # Обновляем последний вход и данные
                 cursor.execute('''
                     UPDATE users 
                     SET telegram_username = ?
-                    WHERE id = ?
+                    WHERE telegram_id = ?
                 ''', (
                     telegram_data.get('username'),
                     user_id
@@ -110,8 +104,8 @@ class Database:
                     (telegram_id, telegram_username, card_number)
                     VALUES (?, ?, ?)
                 ''', (
-                    telegram_data['id'],
-                    telegram_data['fio'],
+                    telegram_data['telegram_id'],
+                    telegram_data['username'],
                     card_number
                 ))
                 user_id = cursor.lastrowid
@@ -133,7 +127,7 @@ class Database:
             cursor.execute('SELECT COUNT(*) as count FROM users')
             return cursor.fetchone()['count']
 
-    def get_business_count(self):
+    def get_discount_count(self):
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT COUNT(*) as count FROM businesses')
@@ -146,14 +140,14 @@ class Database:
             
             card_number = self.generate_card_number()
             # Генерируем уникальный telegram_id для пользователей созданных через админку
-            fake_telegram_id = int(hash(user_data['id']) % 1000000000)
+            fake_telegram_id = int(hash(user_data['telegram_id']) % 1000000000)
             
             cursor.execute('''
                 INSERT INTO users (telegram_id, telegram_username, card_number)
                 VALUES (?, ?, ?)
             ''', (
                 abs(fake_telegram_id),  # Убеждаемся что положительное число
-                user_data['fio'],
+                user_data['username'],
                 card_number
                 
             ))
@@ -165,48 +159,34 @@ class Database:
         """Удалить пользователя"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute('DELETE FROM users WHERE id = ?', (user_id,))
+            cursor.execute('DELETE FROM users WHERE telegram_id = ?', (user_id,))
             affected = cursor.rowcount
             if affected > 0:
                 logger.info(f"Deleted user: {user_id}")
             return affected > 0
 
-
-    def add_business(self, business_data):
+    def add_discount(self, business_data):
         """Добавить бизнес"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
             
-            coordinates = business_data['coordinates']
-            if not isinstance(coordinates, (list, tuple)) or len(coordinates) != 2:
-                raise ValueError("Coordinates must be a list/tuple of [lat, lon]")
+            # coordinates = business_data['coordinates']
+            # if not isinstance(coordinates, (list, tuple)) or len(coordinates) != 2:
+            #     raise ValueError("Coordinates must be a list/tuple of [lat, lon]")
             
             cursor.execute('''
                 INSERT INTO businesses 
-                (company_name, address, latitude, longitude, discount_description,
-                 discount_percentage, phone_number, working_hours, is_active, category,
-                 contact_person, email, website)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (company_name, discount_percentage)
+                VALUES (?, ?)
             ''', (
                 business_data['company_name'],
-                business_data['address'],
-                coordinates[0],  # latitude
-                coordinates[1],  # longitude
-                business_data['discount_description'],
-                business_data.get('discount_percentage'),
-                business_data.get('phone_number'),
-                business_data.get('working_hours'),
-                business_data['is_active'],
-                business_data.get('category', 'other'),
-                business_data.get('contact_person'),
-                business_data.get('email'),
-                business_data.get('website')
+                business_data['discount_percentage'],
             ))
             business_id = cursor.lastrowid
             logger.info(f"Added business: {business_id} - {business_data['company_name']}")
             return business_id
 
-    def delete_business(self, business_id):
+    def delete_discount(self, business_id):
         """Удалить бизнес"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
@@ -215,9 +195,6 @@ class Database:
             if affected > 0:
                 logger.info(f"Deleted business: {business_id}")
             return affected > 0
-        
-    
-
 
 # Создаем экземпляр базы данных
 db = Database()
