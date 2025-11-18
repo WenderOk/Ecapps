@@ -44,7 +44,7 @@ const AdminPanel = () => {
             card_active
         };
 
-        setUsers(prevUsers => [...prevUsers, newUser]); // Добавляем в массив
+        setUsers(prevUsers => [...prevUsers, newUser]);
 
         console.log("Добавлен участник:", newUser);
         setUsername("");
@@ -55,6 +55,7 @@ const AdminPanel = () => {
     };
 
     const handleDeleteUser = (id: number) => {
+        apiService.deleteUser(id);
         setUsers(prevUsers => prevUsers.filter(user => user.telegram_id !== id));
     };
 
@@ -66,13 +67,13 @@ const AdminPanel = () => {
 
         setCardError(null);
 
-        const businessData = {
+        const discountData = {
             company_name,
             discount_percentage
         };
 
         try {
-            await apiService.addDiscount(businessData);
+            await apiService.addDiscount(discountData);
 
             window.location.reload();
 
