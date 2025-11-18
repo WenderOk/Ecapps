@@ -118,5 +118,54 @@ def delete_user_admin(user_id):
             'message': str(e)
         }), 500
 
+@app.route('/api/discounts', methods=['POST'])
+def add_discount():
+        try:
+            discount_data = request.json
+            discount_id = db.add_discount(discount_data)
+            
+            return jsonify({
+                'success': True,
+                'user_id': discount_id
+            })
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'message': str(e)
+        }), 500
+
+@app.route('/api/discounts', methods=['GET'])
+def get_all_discounts():
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM discounts')
+            discounts = [dict(row) for row in cursor.fetchall()]
+            
+        return jsonify({
+            'success': True,
+            'discounts': discounts
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+@app.route('/api/discounts<int:discount_id>', methods=['DELETE'])
+def delete_discount(discount_id):
+    try:
+        success = db.delete_discount(discount_id)
+        
+        return jsonify({
+            'success': success,
+            'message': 'Discount deleted' if success else 'Discount not found'
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

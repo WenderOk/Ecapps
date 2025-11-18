@@ -18,11 +18,11 @@ app.post("/api/admin/users", (req, res) => {
     res.json({ success: true, user_id: newUser.telegram_id });
 });
 
-app.get("/api/businesses", (req, res) => {
-    res.json({ success: true, businesses: discounts });
+app.get("/api/discounts", (req, res) => {
+    res.json({ success: true, discounts: discounts });
 });
 
-app.post("/api/businesses", (req, res) => {
+app.post("/api/discounts", (req, res) => {
     const newDiscount = { ...req.body, id: Date.now() };
     discounts.push(newDiscount);
     res.json({ success: true, discount_id: newDiscount.id });

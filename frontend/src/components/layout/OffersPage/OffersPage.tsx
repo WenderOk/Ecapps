@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import Card from "../../ui/Card/Card.tsx";
-import { apiService, type Business } from "../../services/api";
+import { apiService, type Discount } from "../../services/api";
 
 const OffersPage = () => {
-    const [businesses, setBusinesses] = useState<Business[]>([]);
+    const [businesses, setBusinesses] = useState<Discount[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

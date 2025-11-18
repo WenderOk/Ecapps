@@ -140,13 +140,13 @@ class Database:
             
             card_number = self.generate_card_number()
             # Генерируем уникальный telegram_id для пользователей созданных через админку
-            fake_telegram_id = int(hash(user_data['telegram_id']) % 1000000000)
+            # fake_telegram_id = int(hash(user_data['telegram_id']) % 1000000000)
             
             cursor.execute('''
                 INSERT INTO users (telegram_id, telegram_username, card_number)
                 VALUES (?, ?, ?)
             ''', (
-                abs(fake_telegram_id),  # Убеждаемся что положительное число
+                user_data['telegram_id'],  # Убеждаемся что положительное число
                 user_data['username'],
                 card_number
                 
@@ -175,7 +175,7 @@ class Database:
             #     raise ValueError("Coordinates must be a list/tuple of [lat, lon]")
             
             cursor.execute('''
-                INSERT INTO businesses 
+                INSERT INTO discounts
                 (company_name, discount_percentage)
                 VALUES (?, ?)
             ''', (
@@ -183,17 +183,17 @@ class Database:
                 business_data['discount_percentage'],
             ))
             business_id = cursor.lastrowid
-            logger.info(f"Added business: {business_id} - {business_data['company_name']}")
+            logger.info(f"Added discount: {business_id} - {business_data['company_name']}")
             return business_id
 
     def delete_discount(self, business_id):
         """Удалить бизнес"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute('DELETE FROM businesses WHERE id = ?', (business_id,))
+            cursor.execute('DELETE FROM discounts WHERE id = ?', (business_id,))
             affected = cursor.rowcount
             if affected > 0:
-                logger.info(f"Deleted business: {business_id}")
+                logger.info(f"Deleted discount: {business_id}")
             return affected > 0
 
 # Создаем экземпляр базы данных

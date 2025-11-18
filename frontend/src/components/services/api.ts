@@ -8,7 +8,7 @@ export interface User {
   card_active: boolean;
 }
 
-export interface Business {
+export interface Discount {
   id: number;
   company_name: string;
   discount_percentage: number;
@@ -56,21 +56,21 @@ class ApiService {
     return data.success;
   }
 
-  async getDiscounts(): Promise<Business[]> {
-    const data = await this.request<{ success: boolean; businesses: Business[] }>('/businesses');
-    return data.businesses;
+  async getDiscounts(): Promise<Discount[]> {
+    const data = await this.request<{ success: boolean; discounts: Discount[] }>('/discounts');
+    return data.discounts;
   }
 
-  async addDiscount(businessData: {company_name: string; discount_percentage: number;}): Promise<number> {
-    const data = await this.request<{ success: boolean; discount_id: number }>('/businesses', {
+  async addDiscount(discountData: {company_name: string; discount_percentage: number;}): Promise<number> {
+    const data = await this.request<{ success: boolean; discount_id: number }>('/discounts', {
       method: 'POST',
-      body: JSON.stringify(businessData),
+      body: JSON.stringify(discountData),
     });
     return data.discount_id;
   }
 
-  async deleteDiscount(businessId: number): Promise<boolean> {
-    const data = await this.request<{ success: boolean; message: string }>(`/businesses/${businessId}`, {
+  async deleteDiscount(discountId: number): Promise<boolean> {
+    const data = await this.request<{ success: boolean; message: string }>(`/discounts/${discountId}`, {
       method: 'DELETE',
     });
     return data.success;
