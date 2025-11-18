@@ -1,0 +1,49 @@
+.Input {
+  width: 323px;
+  min-height: 48px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &__title {
+    position: absolute;
+    top: -11px;
+    left: 16px;
+    background: #fff;
+    padding: 0 6px;
+    font-size: 15px;
+    line-height: 22px;
+    height: 22px;
+    color: #5f6b7a;
+    transition: color 0.2s;
+    pointer-events: none;
+  }
+
+  &__textarea {
+    padding: 16px;
+    box-sizing: border-box;
+    border: 1.8px solid #e1e5ea;
+    border-radius: 14px;
+    font-size: 15px;
+    resize: none;
+    overflow: hidden;
+    outline: none;
+    transition: border-color 0.2s;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    font-family: inherit;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    &:focus {
+      border-color: #007AFF;
+    }
+
+    &:focus + &__title {
+      color: #007AFF;
+    }
+  }
+}

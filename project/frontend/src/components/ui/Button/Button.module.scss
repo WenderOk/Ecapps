@@ -1,0 +1,36 @@
+@use "../../../styles/colors" as *;
+
+.Button {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 12px;
+  cursor: pointer;
+
+  &__primary {
+    border: none;
+    background-color: $color-button-blue;
+    color: white;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: $color-button-hover-blue;
+    }
+  }
+
+  &__secondary {
+    border: 1px solid $color-button-text-blue;
+    background-color: white;
+    color: $color-button-text-blue;
+    transition: background-color 0.2s, color 0.2s;
+
+    &:hover {
+      background-color: $color-button-text-blue;
+      color: white;
+    }
+  }
+
+}

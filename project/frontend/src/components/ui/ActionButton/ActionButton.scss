@@ -1,0 +1,28 @@
+@use "../../../styles/mixins" as *;
+
+.actionButton {
+  @include flexProps;
+  flex-direction: column;
+  padding: 1rem;
+  background-color: #f0f4ff; // светлый фон кнопки
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #007bff; // синий цвет текста
+  transition: background-color 0.2s, transform 0.2s;
+
+  &__title {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  &:hover {
+    background-color: #e0eaff;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
