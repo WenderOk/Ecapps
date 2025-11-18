@@ -7,10 +7,10 @@ meta:
     version: 3.11
 
 build:
-  requirementsPath: project/requirements.txt
+  requirementsPath: project/backend/requirements.txt
   useCache: true
 
 run:
   containerPort: 5000
-  command: cd project/ && gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 120 app:app
+  command: cd project/backend && gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 120 app:app
   persistenceMount: /data
