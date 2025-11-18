@@ -7,7 +7,7 @@ import Button from "../../ui/Button/Button.tsx";
 const WelcomePage = () => {
     return (    
         <div className="WelcomePage">
-            <h1 className="WelcomePage__title">YCard</h1>
+            <h1 className="WelcomePage__title">YCard DEMO</h1>
             <div className="WelcomePage__logo">
                 <FontAwesomeIcon icon={faUsers} />
             </div>
