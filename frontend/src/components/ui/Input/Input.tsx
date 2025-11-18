@@ -1,10 +1,10 @@
 import styles from "./Input.module.scss";
 
 type InputProps = {
-    type: "email" | "password";
+    type: "number" | "text" | "password";
     title: string;
     placeholder: string;
-    value: string;
+    value: number | string;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 

@@ -9,17 +9,15 @@ type ModalProps = {
     isOpen: boolean;
     onClose: () => void;
     title: string;
-    image?: string;
     address?: string;
 };
 
-const Modal = ({ isOpen, onClose, title, image, address }: ModalProps) => {
+const Modal = ({ isOpen, onClose, title, address }: ModalProps) => {
     if (!isOpen) return null;
 
     return (
         <div className={style.modalOverlay} onClick={onClose}>
             <div className={style.modal} onClick={(e) => e.stopPropagation()}>
-                {image && <img className={style["modal__image"]} src={image} alt={title} />}
 
                 <h2 className={style["modal__title"]}>{title}</h2>
                 {address && <p className={style["modal__address"]}>{address}</p>}

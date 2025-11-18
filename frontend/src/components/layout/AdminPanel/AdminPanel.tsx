@@ -34,33 +34,7 @@ const AdminPanel = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [discountCards, setDiscountCards] = useState<DiscountCard[]>([]);
 
-    // const validateUser = () => {
-    //     if (!username.trim() || !phone.trim() || !emil.trim()) {
-    //         return "Все поля обязательны";
-    //     }
-
-    //     if (!/^[А-Яа-яЁё\s-]+$/.testusername)) {
-    //         return "ФИО должно содержать только буквы";
-    //     }
-
-    //     if (!/^\d+$/.test(phone)) {
-    //         return "Телефон должен содержать только цифры";
-    //     }
-
-    //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    //     if (!emailRegex.test(email)) {
-    //         return "Введите корректный email";
-    //     }
-
-    //     return null;
-    // };
-
     const handleAddUser = () => {
-        // const error = validateUser();
-        // if (error) {
-        //     setUserError(error);
-        //     return;
-        // }
         setUserError(null);
 
         const newUser: User = {
@@ -84,38 +58,35 @@ const AdminPanel = () => {
         setUsers(prevUsers => prevUsers.filter(user => user.telegram_id !== id));
     };
 
-    const validateCard = () => {
-        if (!company_name.trim() || (discount_percentage >= 0 || discount_percentage <= 100)) {
-            return "Название обязательно и скидка должна быть от 0 до 100";
-        }
-        return null;
-    };
-
-    const handleAddCard = () => {
-        const error = validateCard();
-        if (error) {
-            setCardError(error);
+    const handleAddCard = async () => {
+        if (!company_name.trim() || discount_percentage < 0 || discount_percentage > 100) {
+            setCardError("Название и скидка (0–100%) обязательны");
             return;
         }
+
         setCardError(null);
 
-        const newCard: DiscountCard = {
-            id: Date.now(),
-            name: company_name,
-            discount: discount_percentage
+        const businessData = {
+            company_name,
+            discount_percentage
         };
 
-        setDiscountCards(prevCards => [...prevCards, newCard]);
+        try {
+            await apiService.addDiscount(businessData);
 
-        console.log("Добавлена карточка бизнеса:", newCard);
-        setCompany_name("");
-        setDiscount_percentage(0);
+            window.location.reload();
 
-        apiService.addDiscount(newCard);
+            setCompany_name("");
+            setDiscount_percentage(0);
+
+        } catch (e) {
+            console.error("Ошибка добавления:", e);
+        }
     };
 
-    const handleDeleteCard = (id: number) => {
-        setDiscountCards(prevCards => prevCards.filter(card => card.id !== id));
+    const handleDeleteCard = async (id: number) => {
+        await apiService.deleteDiscount(id);
+        setDiscountCards(prev => prev.filter(c => c.id !== id));
     };
 
     return (
@@ -127,8 +98,7 @@ const AdminPanel = () => {
                 <h2 className={style["admin__header--title"]}>Участники Молодёжной Карты</h2>
 
                 <div className={style["admin__form"]}>
-                    <Input title="ФИО" value={username} onChange={(e) => setUsername(e.target.value)} type={"email"} placeholder={""} />
-                    {/* <Input title="Email" value={email} onChange={(e) => setCard_active(e.target.value)} type={"email"} placeholder={""} /> */}
+                    <Input title="ФИО" value={username} onChange={(e) => setUsername(e.target.value)} type={"text"} placeholder={""} />
 
                     {userError && <p className={style.error}>{userError}</p>}
 
@@ -138,6 +108,7 @@ const AdminPanel = () => {
                 <div className={style["admin__list"]} style={{ maxHeight: "400px", overflowY: "auto" }}>
                     {users.map(user => (
                         <AdminItem
+                            key={user.telegram_id}
                             telegram_id={user.telegram_id}
                             username={user.username}
                             card_number={user.card_number}
@@ -153,7 +124,21 @@ const AdminPanel = () => {
                 <h2 className={style.sectionTitle}>Бизнес-карточки</h2>
 
                 <div className={style.form}>
-                    <Input title="Название" value={company_name} onChange={(e) => setCompany_name(e.target.value)} type={"email"} placeholder={""} />
+                    <Input
+                        title="Название компании"
+                        value={company_name}
+                        onChange={(e) => setCompany_name(e.target.value)}
+                        type="text"
+                        placeholder="Введите название"
+                    />
+
+                    <Input
+                        title="Скидка (%)"
+                        value={discount_percentage}
+                        onChange={(e) => setDiscount_percentage(Number(e.target.value))}
+                        type="number"
+                        placeholder="0–100"
+                    />
 
                     {cardError && <p className={style.error}>{cardError}</p>}
 
@@ -165,7 +150,7 @@ const AdminPanel = () => {
                         <div key={card.id} className={style["admin__list--item"]}>
                             <div>
                                 <p className={style["admin__list--item__name"]}>{card.name}</p>
-                                <p className={style["admin__list--item__info"]}>{card.discount}</p>
+                                <p className={style["admin__list--item__info"]}>{card.discount}%</p>
                             </div>
                             <Button title="Удалить" background="secondary" onClick={() => handleDeleteCard(card.id)}/>
                         </div>

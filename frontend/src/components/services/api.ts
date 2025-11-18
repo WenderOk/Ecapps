@@ -80,6 +80,11 @@ class ApiService {
     const data = await this.request<{ success: boolean; stats: Stats }>('/stats');
     return data.stats;
   }
+
+    async getUser(telegram_id: number): Promise<User> {
+        const data = await this.request<{ success: boolean; user: User }>(`/user/${telegram_id}`);
+        return data.user;
+    }
 }
 
 export const apiService = new ApiService();

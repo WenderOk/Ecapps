@@ -1,4 +1,3 @@
-import "./Card.module.scss";
 import style from "./Card.module.scss";
 import Modal from "./Modal/Modal"
 import { useState } from "react";
@@ -37,7 +36,6 @@ const Card = ({ image, title, subtitle, address }: CardProps) => {
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 title={title}
-                image={image}
                 address={address}
             />
         </>

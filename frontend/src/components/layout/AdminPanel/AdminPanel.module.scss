@@ -87,3 +87,20 @@
   font-size: 14px;
   text-align: left;
 }
+
+.listScroll {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 320px;     // ограничение по высоте
+  overflow-y: auto;      // прокрутка
+  padding-right: 6px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 5px;
+  }
+}
