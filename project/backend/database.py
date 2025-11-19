@@ -80,21 +80,21 @@ class Database:
             
             # Проверяем существующего пользователя
             cursor.execute(
-                'SELECT telegram_id FROM users WHERE telegram_id = ?', 
-                (telegram_data['telegram_id'],)
+                'SELECT telegram_username FROM users WHERE telegram_username = ?', 
+                (telegram_data['username'],)
             )
             user = cursor.fetchone()
             
             if user:
-                user_id = user['telegram_id']
+                username = user['username']
                 # Обновляем последний вход и данные
                 cursor.execute('''
                     UPDATE users 
-                    SET telegram_username = ?
-                    WHERE telegram_id = ?
+                    SET telegram_id = ?
+                    WHERE username = ?
                 ''', (
-                    telegram_data.get('username'),
-                    user_id
+                    telegram_data['telegram_id'],
+                    username
                 ))
             else:
                 # Создаем нового пользователя
@@ -108,10 +108,10 @@ class Database:
                     telegram_data['username'],
                     card_number
                 ))
-                user_id = cursor.lastrowid
-                logger.info(f"Created new user: {user_id} with card: {card_number}")
+                username = cursor.lastrowid
+                logger.info(f"Created new user: {username} with card: {card_number}")
             
-            return user_id
+            return username
 
     def get_user_by_telegram_id(self, telegram_id):
         """Получить пользователя по Telegram ID"""
@@ -137,7 +137,6 @@ class Database:
         """Добавить пользователя (для админки)"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            
             card_number = self.generate_card_number()
             # Генерируем уникальный telegram_id для пользователей созданных через админку
             # fake_telegram_id = int(hash(user_data['telegram_id']) % 1000000000)

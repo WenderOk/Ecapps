@@ -2,7 +2,7 @@ import style from "./AdminPanel.module.scss";
 import Button from "../../ui/Button/Button";
 import Input from "../../ui/Input/Input";
 import AdminItem from "./AdminItem/AdminItem";
-import { useState} from "react";
+import { useState, useEffect } from "react";
 import { apiService } from "../../services/api";
 
 interface User {
@@ -33,6 +33,38 @@ const AdminPanel = () => {
     //Состояния для отображения
     const [users, setUsers] = useState<User[]>([]);
     const [discountCards, setDiscountCards] = useState<DiscountCard[]>([]);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                //Получаем всех пользователей
+                const fetchedUsers = await apiService.getAllUsers();
+                setUsers(
+                    fetchedUsers.map(u => ({
+                        telegram_id: u.telegram_id,
+                        username: u.telegram_username,
+                        card_number: u.card_number,
+                        card_active: u.card_active,
+                    }))
+                );
+
+                //Получаем все бизнес-карточки
+                const fetchedCards = await apiService.getDiscounts();
+                setDiscountCards(
+                    fetchedCards.map(c => ({
+                        id: c.id,
+                        name: c.company_name,
+                        discount: c.discount_percentage,
+                    }))
+                );
+            } catch (e) {
+                console.error("Ошибка загрузки данных:", e);
+            }
+        };
+
+        loadData();
+    }, []);
+
 
     const handleAddUser = () => {
         setUserError(null);

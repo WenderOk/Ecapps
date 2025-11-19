@@ -1,5 +1,5 @@
 // src/services/api.ts
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://dom-molodezi-ycapps-wenwu.amvera.io/api';
 
 export interface User {
   telegram_id: number;
@@ -36,6 +36,11 @@ class ApiService {
     return response.json();
   }
 
+  async getUser(telegram_id: number): Promise<User> {
+    const data = await this.request<{ success: boolean; user: User }>(`/user/${telegram_id}`);
+    return data.user;
+  }
+
   async getAllUsers(): Promise<User[]> {
     const data = await this.request<{ success: boolean; users: User[] }>('/admin/users');
     return data.users;
@@ -43,6 +48,14 @@ class ApiService {
 
   async addUser(userData: { telegram_id: number; username: string; card_number: string; card_active: boolean }): Promise<number> {
     const data = await this.request<{ success: boolean; user_id: number }>('/admin/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+    return data.user_id;
+  }
+
+  async addOrGetUser(userData: { telegram_id: number; username: string; card_number: string; card_active: boolean }): Promise<number> {
+    const data = await this.request<{ success: boolean; user_id: number }>('/user', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
@@ -80,11 +93,6 @@ class ApiService {
     const data = await this.request<{ success: boolean; stats: Stats }>('/stats');
     return data.stats;
   }
-
-    async getUser(telegram_id: number): Promise<User> {
-        const data = await this.request<{ success: boolean; user: User }>(`/user/${telegram_id}`);
-        return data.user;
-    }
 }
 
 export const apiService = new ApiService();

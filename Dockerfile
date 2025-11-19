@@ -2,19 +2,21 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Копируем зависимости
+# Копируем зависимости бэкенда
 COPY backend/requirements.txt .
 
-# Устанавливаем зависимости
+# Устанавливаем зависимости Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем весь проект
-COPY . .
+# Копируем код бэкенда
+COPY backend/ ./backend/
+
+# Копируем собранный фронтенд в ПРАВИЛЬНУЮ папку
+COPY frontend/dist/ ./frontend/dist/
 
 # Создаем переменные окружения
 ENV FLASK_APP=backend/app.py
 ENV FLASK_ENV=production
-ENV PYTHONPATH=/app
 
 # Открываем порт
 EXPOSE 5000
