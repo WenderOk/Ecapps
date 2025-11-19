@@ -66,11 +66,11 @@ const AdminLogIn = () => {
                     {error && <p className={style["admin__error"]}>{error}</p>}
 
                     <div className={style["admin__input--actions"]}>
-                        <Button title="Log In" background="secondary" onClick={handleLogin} />
-
                         <Link to="/" style={{ textDecoration: "none" }}>
                             <Button title="Домой" background="primary"/>
                         </Link>
+
+                        <Button title="Log In" background="secondary" onClick={handleLogin} />
                     </div>
                 </div>
             </div>
