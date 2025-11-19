@@ -107,8 +107,6 @@ const AdminPanel = () => {
         try {
             await apiService.addDiscount(discountData);
 
-            window.location.reload();
-
             setCompany_name("");
             setDiscount_percentage(0);
 
@@ -131,7 +129,7 @@ const AdminPanel = () => {
                 <h2 className={style["admin__header--title"]}>Участники Молодёжной Карты</h2>
 
                 <div className={style["admin__form"]}>
-                    <Input title="ФИО" value={username} onChange={(e) => setUsername(e.target.value)} type={"text"} placeholder={""} />
+                    <Input title="Username" value={username} onChange={(e) => setUsername(e.target.value)} type={"text"} placeholder={""} />
 
                     {userError && <p className={style.error}>{userError}</p>}
 
