@@ -5,19 +5,27 @@ import { faHome, faQrcode, faTags } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
+declare global {
+    interface Window {
+        Telegram: any;
+    }
+}
+
 const ProfilePage = () => {
     const [telegramUsername, setTelegramUsername] = useState<string | null>(null);
+    const [telegram_id, setTelegramId] = useState<number | null>(null);
 
     useEffect(() => {
         // Проверяем, доступен ли Telegram WebApp
         if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
             const user = window.Telegram.WebApp.initDataUnsafe.user;
             setTelegramUsername(user.username || `${user.first_name || ""} ${user.last_name || ""}`.trim());
+            setTelegramId(user.telegram_id);
         }
     }, []);
 
     // Используем username в QR-коде (или "Гость", если нет)
-    const profileUrl = `${window.location.origin}/profile/${telegramUsername || "guest"}`;
+    const profileUrl = `${window.location.origin}/profile/${telegram_id || "guest"}`;
 
     return (
         <div className="ProfilePage">

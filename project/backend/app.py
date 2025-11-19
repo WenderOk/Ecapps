@@ -1,11 +1,33 @@
-# server.py
-from flask import Flask, request, jsonify
+# app.py
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import json
+import os
 from database import db
 
-app = Flask(__name__)
-CORS(app)  # Разрешаем CORS для React приложения
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(BASE_DIR, '..', 'frontend', 'dist')
+
+app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
+CORS(app, origins = ["http://localhost:5000", "https://dom-molodezi-ycapps-wenwu.amvera.io" ]) 
+
+# Маршрут для раздачи статических файлов
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react_app(path):
+    app.logger.debug(f'Serving path: {path}')
+    app.logger.debug(f'Static folder: {app.static_folder}')
+    
+    # Проверяем существование статической папки
+    if not os.path.exists(app.static_folder):
+        app.logger.error(f'Static folder does not exist: {app.static_folder}')
+        return "Static files not found", 500
+    
+    # Если путь существует - отдаем файл, иначе - index.html
+    if path and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 # API для получения пользователя по Telegram ID
 @app.route('/api/user/<int:telegram_id>', methods=['GET'])
@@ -40,26 +62,6 @@ def create_or_get_user():
             'success': True,
             'user_id': user_id,
             'user': user
-        })
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'message': str(e)
-        }), 500
-
-# API для получения статистики
-@app.route('/api/stats', methods=['GET'])
-def get_stats():
-    try:
-        user_count = db.get_user_count()
-        business_count = db.get_business_count()
-        
-        return jsonify({
-            'success': True,
-            'stats': {
-                'users': user_count,
-                'businesses': business_count
-            }
         })
     except Exception as e:
         return jsonify({
@@ -152,7 +154,7 @@ def get_all_discounts():
             'message': str(e)
         }), 500
 
-@app.route('/api/discounts<int:discount_id>', methods=['DELETE'])
+@app.route('/api/discounts/<int:discount_id>', methods=['DELETE'])
 def delete_discount(discount_id):
     try:
         success = db.delete_discount(discount_id)
@@ -160,6 +162,26 @@ def delete_discount(discount_id):
         return jsonify({
             'success': success,
             'message': 'Discount deleted' if success else 'Discount not found'
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+# API для получения статистики
+@app.route('/api/stats', methods=['GET'])
+def get_stats():
+    try:
+        user_count = db.get_user_count()
+        business_count = db.get_business_count()
+        
+        return jsonify({
+            'success': True,
+            'stats': {
+                'users': user_count,
+                'businesses': business_count
+            }
         })
     except Exception as e:
         return jsonify({
