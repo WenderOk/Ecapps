@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Панель управления - Молодёжная карта</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="content-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1>🏠 Панель управления</h1>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="color: #666;">👋 {{ session.get("admin_username", "Админ") }}</span>
+                    <a href="/admin/logout" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px;">🚪 Выйти</a>
+                </div>
+            </div>
+            
+            <div class="subtitle">Управление системой Молодёжной карты</div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">{{ users_count }}</div>
+                    <div class="stat-label">Всего пользователей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ active_users_count }}</div>
+                    <div class="stat-label">Активных карт</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ businesses_count }}</div>
+                    <div class="stat-label">Бизнесов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ active_business_count }}</div>
+                    <div class="stat-label">Активных скидок</div>
+                </div>
+            </div>
+            
+            <div class="nav-cards">
+                <a href="/admin/users/add" class="nav-card">
+                    <h3>👥 Добавить пользователя</h3>
+                    <p>Добавить нового участника программы</p>
+                </a>
+                <a href="/admin/users/list" class="nav-card">
+                    <h3>📋 Список пользователей</h3>
+                    <p>Просмотр и управление пользователями</p>
+                </a>
+                <a href="/admin/business/add" class="nav-card">
+                    <h3>🏢 Добавить бизнес</h3>
+                    <p>Добавить новую компанию в систему скидок</p>
+                </a>
+                <a href="/admin/business/list" class="nav-card">
+                    <h3>📊 Список бизнесов</h3>
+                    <p>Просмотр и управление всеми компаниями</p>
+                </a>
+            </div>
+        </div>
+    </div>
+    <script src="/js/admin.js"></script>
+</body>
+</html>

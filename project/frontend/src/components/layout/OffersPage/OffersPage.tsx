@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Card from "../../ui/Card/Card.tsx";
-import { apiService, type Discount } from "../../services/api";
+import { apiService, type Discount } from "../../services/api.ts";
 
 const OffersPage = () => {
     const [businesses, setBusinesses] = useState<Discount[]>([]);
