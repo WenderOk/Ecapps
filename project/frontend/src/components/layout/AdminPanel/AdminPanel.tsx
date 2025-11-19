@@ -107,8 +107,6 @@ const AdminPanel = () => {
         try {
             await apiService.addDiscount(discountData);
 
-            window.location.reload();
-
             setCompany_name("");
             setDiscount_percentage(0);
 
