@@ -6,6 +6,7 @@ import OffersPage from "./components/layout/OffersPage/OffersPage.tsx";
 import AdminLogIn from "./components/layout/AdminLogIn/AdminLogIn.tsx";
 import AdminPanel from "./components/layout/AdminPanel/AdminPanel.tsx";
 import ProtectedRoute from "./components/router/ProtectedRoute.tsx";
+import ProfileViewPage from "./components/layout/ProfileViewPage/ProfileViewPage.tsx";
 
 export default function App () {
     return (
@@ -19,6 +20,8 @@ export default function App () {
                         <AdminPanel/>
                     </ProtectedRoute>
                 }/>
+
+                <Route path="/profile/:telegram_id" element={<ProfileViewPage />} />
 
                 <Route path="/profile" element={<ProfilePage />}/>
                 <Route path="/profile/offers" element={<OffersPage />} />
